@@ -20,11 +20,11 @@ window.onload = function() {
 
     // Load player images
     const playerImgRight = new Image();
-    playerImgRight.src = 'playerCroright.png';
+    playerImgRight.src = 'sprites/player.png';
     const playerImgLeft = new Image();
-    playerImgLeft.src = 'playerCroleft.png';
+    playerImgLeft.src = 'sprites/playerLeft.png';
     const playerImgJump = new Image();
-    playerImgJump.src = 'playerCrojump.png';
+    playerImgJump.src = 'sprites/jump.png';
 
     let facing = 'right'; // 'left' or 'right'
     let jumping = false;
@@ -42,9 +42,9 @@ window.onload = function() {
 
     // Load spike images
     const spikeImgSmall = new Image();
-    spikeImgSmall.src = 'Spike-1.png'; // 1:1 ratio
+    spikeImgSmall.src = 'sprites/spikes.png'; // 1:1 ratio
     const spikeImgBig = new Image();
-    spikeImgBig.src = 'Spike-2.png';     // 4:1 ratio
+    spikeImgBig.src = 'sprites/spikesLong.png';     // 4:1 ratio
 
     // Spikes array (add more spikes easily)
     const spikes = [
