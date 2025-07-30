@@ -2,6 +2,21 @@ window.onload = function() {
     const canvas = document.getElementById('myCanvas');
     const ctx = canvas.getContext('2d');
 
+    // Load background image
+    const caveBackground = new Image();
+    caveBackground.src = 'sprites/background.png';
+
+    // Sound effects
+    const soundWalk = new Audio('sounds/walking.mp3');
+    soundWalk.volume = 0.2;        // Quieter (0.0 to 1.0)
+    soundWalk.playbackRate = 1.5;  // Faster (1.0 is normal speed)
+    const soundJump = new Audio('sounds/jump.wav');
+    const soundCrouch = new Audio('sounds/crouch.wav');
+    const soundBackground = new Audio('sounds/background.wav');
+    soundBackground.loop = true;
+    soundBackground.volume = 0.5;
+    soundBackground.play();
+
     // Spawn point
     const spawnPoint = { x: 100, y: canvas.height - 300 };
 
@@ -23,15 +38,19 @@ window.onload = function() {
     playerImgRight.src = 'sprites/player.png';
     const playerImgLeft = new Image();
     playerImgLeft.src = 'sprites/playerLeft.png';
-    const playerImgJump = new Image();
-    playerImgJump.src = 'sprites/jump.png';
+    const playerImgJumpRight = new Image();
+    playerImgJumpRight.src = 'sprites/jump.png';
+    const playerImgJumpLeft = new Image();
+    playerImgJumpLeft.src = 'sprites/jumpLeft.png';
+    const playerImgCrouchRight = new Image();
+    playerImgCrouchRight.src = 'sprites/crouchRight.png';
+    const playerImgCrouchLeft = new Image();
+    playerImgCrouchLeft.src = 'sprites/CrouchLeft.png';
 
     let facing = 'right'; // 'left' or 'right'
     let jumping = false;
     let wWasPressed = false;
     let crouching = false;
-    const normalHeight = 100;
-    const crouchHeight = 70;
 
     // Platforms array (add more platforms easily)
     const platforms = [
@@ -42,9 +61,9 @@ window.onload = function() {
 
     // Load spike images
     const spikeImgSmall = new Image();
-    spikeImgSmall.src = 'sprites/spikes.png'; // 1:1 ratio
+    spikeImgSmall.src = 'sprites/Spikes.png'; // 1:1 ratio
     const spikeImgBig = new Image();
-    spikeImgBig.src = 'sprites/spikesLong.png';     // 4:1 ratio
+    spikeImgBig.src = 'sprites/SpikesLong.png';   // 4:1 ratio
 
     // Spikes array (add more spikes easily)
     const spikes = [
@@ -73,31 +92,51 @@ window.onload = function() {
         keys[key] = true;
         if (key === 'a') facing = 'left';
         if (key === 'd') facing = 'right';
-        if (key === 'w') {
+        if (key === ' ') { // Spacebar for crouch before jump
+            e.preventDefault();
             wWasPressed = true;
-            // Crouch only if grounded and not already crouching
             if (player.grounded && !crouching) {
                 crouching = true;
-                player.y += normalHeight - crouchHeight;
-                player.height = crouchHeight;
+                if (soundCrouch) {
+                    soundCrouch.currentTime = 0;
+                    soundCrouch.play();
+                }
+            }
+        }
+        if (key === 'w') { // Spacebar for crouch before jump
+            e.preventDefault();
+            wWasPressed = true;
+            if (player.grounded && !crouching) {
+                crouching = true;
+                if (soundCrouch) {
+                    soundCrouch.currentTime = 0;
+                    soundCrouch.play();
+                }
             }
         }
     });
+
     document.addEventListener('keyup', (e) => {
         const key = e.key.toLowerCase();
         keys[key] = false;
-        if (key === 'w' && wWasPressed && player.grounded) {
-            // Restore height before jump
-            if (crouching) {
-                player.y -= normalHeight - crouchHeight;
-                player.height = normalHeight;
-                crouching = false;
-            }
-            player.velY = flipSquare.flipped ? player.jumpPower : -player.jumpPower;
-            player.grounded = false;
-            jumping = true;
+        document.addEventListener('keyup', (e) => {
+    const key = e.key.toLowerCase();
+    keys[key] = false;
+    if ((e.code === 'Space' || key === 'w') && wWasPressed && player.grounded) {
+        e.preventDefault();
+        if (crouching) {
+            crouching = false;
         }
-        if (key === 'w') wWasPressed = false;
+        player.velY = flipSquare.flipped ? player.jumpPower : -player.jumpPower;
+        player.grounded = false;
+        jumping = true;
+        if (soundJump) {
+            soundJump.currentTime = 0;
+            soundJump.play();
+        }
+        wWasPressed = false;
+    }
+    });
     });
 
     function checkCollision(a, b) {
@@ -111,6 +150,17 @@ window.onload = function() {
 
     function update() {
         // Left/Right movement
+        if ((keys['a'] || keys['d']) && player.grounded) {
+            if (soundWalk && soundWalk.paused) {
+                soundWalk.currentTime = 0;
+                soundWalk.play();
+            }
+        } else {
+            if (soundWalk && !soundWalk.paused) {
+                soundWalk.pause();
+                soundWalk.currentTime = 0;
+            }
+        }
         if (keys['a']) player.velX = -player.speed;
         if (keys['d']) player.velX = player.speed;
 
@@ -172,6 +222,7 @@ window.onload = function() {
                 player.velY = 0;
                 flipSquare.flipped = false; // Reset flip on death
                 jumping = false;
+                crouching = false;
             }
         }
 
@@ -183,6 +234,11 @@ window.onload = function() {
 
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw background
+        if (caveBackground.complete && caveBackground.naturalWidth !== 0) {
+            ctx.drawImage(caveBackground, 0, 0, canvas.width, canvas.height);
+        }
 
         // Draw platforms
         ctx.fillStyle = 'green';
@@ -214,7 +270,9 @@ window.onload = function() {
         // Draw player image based on state
         let imgToDraw;
         if (jumping) {
-            imgToDraw = playerImgJump;
+            imgToDraw = (facing === 'left') ? playerImgJumpLeft : playerImgJumpRight;
+        } else if (crouching) {
+            imgToDraw = (facing === 'left') ? playerImgCrouchLeft : playerImgCrouchRight;
         } else if (facing === 'left') {
             imgToDraw = playerImgLeft;
         } else {
@@ -234,6 +292,5 @@ window.onload = function() {
         draw();
         requestAnimationFrame(loop);
     }
-
     loop();
 };
