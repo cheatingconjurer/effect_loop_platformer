@@ -45,7 +45,7 @@ window.onload = function() {
     const playerImgCrouchRight = new Image();
     playerImgCrouchRight.src = 'sprites/crouchRight.png';
     const playerImgCrouchLeft = new Image();
-    playerImgCrouchLeft.src = 'sprites/CrouchLeft.png';
+    playerImgCrouchLeft.src = 'sprites/crouchLeft.png';
     //walking cycle sprites
     const playerWalk1Right=new Image();
     playerWalk1Right.src='sprites/walking/walk1Right.png';
