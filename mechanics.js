@@ -286,14 +286,14 @@ window.onload = function() {
 
         // Draw player image based on state
         let imgToDraw;
-        if (jumping) {
+        if(walking){
+            imgToDraw = (facing === 'left') ? playerWalk1Left : playerWalk1Right;
+        }else if (jumping) {
             imgToDraw = (facing === 'left') ? playerImgJumpLeft : playerImgJumpRight;
         } else if (crouching) {
             imgToDraw = (facing === 'left') ? playerImgCrouchLeft : playerImgCrouchRight;
         } else if (facing === 'left') {
             imgToDraw = playerImgLeft;
-        }else if(walking){
-            imgToDraw = (facing === 'left') ? playerWalk1Left : playerWalk1Right;
         } else {
             imgToDraw = playerImgRight;
         }
