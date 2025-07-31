@@ -3,10 +3,15 @@ window.onload = function() {
 	MAX_LEVEL=5
 	co=c.getContext("2d")
 	menu=createMenu()
+	playBtn=new Image();
+	playBtn.src="sprites/menu/playBtn.png";
+	playBtnHover=new Image();
+	playBtnHover.src="sprites/menu/playBtnHover.png";
+	
 	title_screen_button_list=[
 		createMenuButton(760,100,80,50,function(){menu.changeButtonList(level_select_button_list)},
-			function(x,y){co.textBaseline="top";co.font="50px Arial";co.fillStyle="black";co.fillText("play",x,y,80)},
-			function(x,y){co.textBaseline="top";co.font="50px Arial";co.fillStyle="blue";co.fillText("play",x,y,80)}),
+			function(x,y){co.drawImage(playBtn,x,y,320,80)},
+			function(x,y){co.drawImage(playBtnHover,x,y,320,80)},),
 	]
 	level_select_button_list=[
 		createMenuButton(650,0,320,50,function(){menu.changeButtonList(title_screen_button_list)},
