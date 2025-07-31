@@ -323,5 +323,3 @@ window.onload = function() {
     }
     loop();
 };
-    loop();
-};
