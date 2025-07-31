@@ -8,8 +8,8 @@ window.onload = function() {
 
     // Sound effects
     const soundWalk = new Audio('sounds/walking.mp3');
-    soundWalk.volume = 0.2;        // Quieter (0.0 to 1.0)
-    soundWalk.playbackRate = 1.5;  // Faster (1.0 is normal speed)
+    soundWalk.volume = 0.2;
+    soundWalk.playbackRate = 1.5;
     const soundJump = new Audio('sounds/jump.wav');
     const soundCrouch = new Audio('sounds/crouch.wav');
     const soundBackground = new Audio('sounds/background.wav');
@@ -60,7 +60,9 @@ window.onload = function() {
     let jumping = false;
     let wWasPressed = false;
     let crouching = false;
-    let walking=false;
+    let walking = false;
+    let walkFrame = 0;
+    const walkFrameDelay = 10;
 
     // Platforms array (add more platforms easily)
     const platforms = [
@@ -102,7 +104,7 @@ window.onload = function() {
         keys[key] = true;
         if (key === 'a') facing = 'left';
         if (key === 'd') facing = 'right';
-        if (key === ' ') { // Spacebar for crouch before jump
+        if (key === ' ') {
             e.preventDefault();
             wWasPressed = true;
             if (player.grounded && !crouching) {
@@ -113,7 +115,7 @@ window.onload = function() {
                 }
             }
         }
-        if (key === 'w') { // Spacebar for crouch before jump
+        if (key === 'w') {
             e.preventDefault();
             wWasPressed = true;
             if (player.grounded && !crouching) {
@@ -129,24 +131,20 @@ window.onload = function() {
     document.addEventListener('keyup', (e) => {
         const key = e.key.toLowerCase();
         keys[key] = false;
-        document.addEventListener('keyup', (e) => {
-    const key = e.key.toLowerCase();
-    keys[key] = false;
-    if ((e.code === 'Space' || key === 'w') && wWasPressed && player.grounded) {
-        e.preventDefault();
-        if (crouching) {
-            crouching = false;
+        if ((e.code === 'Space' || key === 'w') && wWasPressed && player.grounded) {
+            e.preventDefault();
+            if (crouching) {
+                crouching = false;
+            }
+            player.velY = flipSquare.flipped ? player.jumpPower : -player.jumpPower;
+            player.grounded = false;
+            jumping = true;
+            if (soundJump) {
+                soundJump.currentTime = 0;
+                soundJump.play();
+            }
+            wWasPressed = false;
         }
-        player.velY = flipSquare.flipped ? player.jumpPower : -player.jumpPower;
-        player.grounded = false;
-        jumping = true;
-        if (soundJump) {
-            soundJump.currentTime = 0;
-            soundJump.play();
-        }
-        wWasPressed = false;
-    }
-    });
     });
 
     function checkCollision(a, b) {
@@ -161,24 +159,33 @@ window.onload = function() {
     function update() {
         // Left/Right movement
         if ((keys['a'] || keys['d']) && player.grounded) {
-            walking=true;
-            console.log(facing);
+            walking = true;
             if (soundWalk && soundWalk.paused) {
                 soundWalk.currentTime = 0;
                 soundWalk.play();
             }
         } else {
-            walking=false;
+            walking = false;
             if (soundWalk && !soundWalk.paused) {
                 soundWalk.pause();
                 soundWalk.currentTime = 0;
             }
         }
-        if (keys['a']){
+        if (keys['a']) {
             player.velX = -player.speed;
         }
-        if (keys['d']){
+        if (keys['d']) {
             player.velX = player.speed;
+        }
+
+        // Walking animation frame update
+        if (walking) {
+            walkFrame++;
+            if (walkFrame >= walkFrameDelay * 2) {
+                walkFrame = 0;
+            }
+        } else {
+            walkFrame = 0;
         }
 
         // Apply gravity (normal or flipped)
@@ -237,7 +244,7 @@ window.onload = function() {
                 player.y = spawnPoint.y;
                 player.velX = 0;
                 player.velY = 0;
-                flipSquare.flipped = false; // Reset flip on death
+                flipSquare.flipped = false;
                 jumping = false;
                 crouching = false;
             }
@@ -269,7 +276,6 @@ window.onload = function() {
             if (img.complete && img.naturalWidth !== 0) {
                 ctx.drawImage(img, spike.x, spike.y, spike.width, spike.height);
             } else {
-                // Fallback: draw triangle
                 ctx.fillStyle = 'gray';
                 ctx.beginPath();
                 ctx.moveTo(spike.x, spike.y + spike.height);
@@ -286,9 +292,13 @@ window.onload = function() {
 
         // Draw player image based on state
         let imgToDraw;
-        if(walking){
-            imgToDraw = (facing === 'left') ? playerWalk1Left : playerWalk1Right;
-        }else if (jumping) {
+        if (walking) {
+            if (facing === 'left') {
+                imgToDraw = (walkFrame < walkFrameDelay) ? playerWalk1Left : playerWalk2Left;
+            } else {
+                imgToDraw = (walkFrame < walkFrameDelay) ? playerWalk1Right : playerWalk2Right;
+            }
+        } else if (jumping) {
             imgToDraw = (facing === 'left') ? playerImgJumpLeft : playerImgJumpRight;
         } else if (crouching) {
             imgToDraw = (facing === 'left') ? playerImgCrouchLeft : playerImgCrouchRight;
@@ -311,5 +321,7 @@ window.onload = function() {
         draw();
         requestAnimationFrame(loop);
     }
+    loop();
+};
     loop();
 };
