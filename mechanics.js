@@ -46,11 +46,21 @@ window.onload = function() {
     playerImgCrouchRight.src = 'sprites/crouchRight.png';
     const playerImgCrouchLeft = new Image();
     playerImgCrouchLeft.src = 'sprites/CrouchLeft.png';
+    //walking cycle sprites
+    const playerWalk1Right=new Image();
+    playerWalk1Right.src='sprites/walking/walk1Right.png';
+    const playerWalk2Right=new Image();
+    playerWalk2Right.src='sprites/walking/walk2Right.png';
+    const playerWalk1Left=new Image();
+    playerWalk1Left.src='sprites/walking/walk1Left.png';
+    const playerWalk2Left=new Image();
+    playerWalk2Left.src='sprites/walking/walk2Left.png';
 
     let facing = 'right'; // 'left' or 'right'
     let jumping = false;
     let wWasPressed = false;
     let crouching = false;
+    let walking=false;
 
     // Platforms array (add more platforms easily)
     const platforms = [
@@ -151,18 +161,25 @@ window.onload = function() {
     function update() {
         // Left/Right movement
         if ((keys['a'] || keys['d']) && player.grounded) {
+            walking=true;
+            console.log(facing);
             if (soundWalk && soundWalk.paused) {
                 soundWalk.currentTime = 0;
                 soundWalk.play();
             }
         } else {
+            walking=false;
             if (soundWalk && !soundWalk.paused) {
                 soundWalk.pause();
                 soundWalk.currentTime = 0;
             }
         }
-        if (keys['a']) player.velX = -player.speed;
-        if (keys['d']) player.velX = player.speed;
+        if (keys['a']){
+            player.velX = -player.speed;
+        }
+        if (keys['d']){
+            player.velX = player.speed;
+        }
 
         // Apply gravity (normal or flipped)
         player.velY += flipSquare.flipped ? -gravity : gravity;
@@ -275,6 +292,8 @@ window.onload = function() {
             imgToDraw = (facing === 'left') ? playerImgCrouchLeft : playerImgCrouchRight;
         } else if (facing === 'left') {
             imgToDraw = playerImgLeft;
+        }else if(walking){
+            imgToDraw = (facing === 'left') ? playerWalk1Left : playerWalk1Right;
         } else {
             imgToDraw = playerImgRight;
         }
