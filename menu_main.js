@@ -23,25 +23,32 @@ window.onload = function() {
 	nextBtn.src="sprites/menu/nextBtn.png";
 	nextHover=new Image();
 	nextHover.src="sprites/menu/nextHover.png"; 
-	
+	function drawImageIfLoaded(img,x,y,w,h){
+		if (img.complete && img.naturalWidth !== 0){
+			co.drawImage(img,x,y,w,h);
+		} else{
+			co.fillStyle="grey"
+			co.fillRect(x,y,w,h);
+		}
+	}
 	title_screen_button_list=[
 		createMenuButton(window.innerWidth/2-160,window.innerHeight/2-40,320,80,function(){menu.changeButtonList(level_select_button_list)},
-			function(x,y){co.drawImage(playBtn,x,y,320,80)},
-			function(x,y){co.drawImage(playBtnHover,x,y,320,80)},),
+			function(x,y){drawImageIfLoaded(playBtn,x,y,320,80)},
+			function(x,y){drawImageIfLoaded(playBtnHover,x,y,320,80)},),
 	]
 	level_select_button_list=[
 		createMenuButton(650,50,320,80,function(){menu.changeButtonList(title_screen_button_list)},
-			function(x,y){co.drawImage(backToMenu,x,y,320,80)},
-			function(x,y){co.drawImage(backToMenuHover,x,y,320,80)},),
+			function(x,y){drawImageIfLoaded(backToMenu,x,y,320,80)},
+			function(x,y){drawImageIfLoaded(backToMenuHover,x,y,320,80)},),
 		createMenuButton(650,150,160,80,function(){if(selected_level>1){selected_level--}},
-			function(x,y){co.drawImage(prevBtn,x,y,160,80)},
-			function(x,y){co.drawImage(prevHover,x,y,160,80)},),
+			function(x,y){drawImageIfLoaded(prevBtn,x,y,160,80)},
+			function(x,y){drawImageIfLoaded(prevHover,x,y,160,80)},),
 		createMenuButton(850,150,160,80,function(){if(selected_level<MAX_LEVEL){selected_level++}},
-			function(x,y){co.drawImage(nextBtn,x,y,160,80)},
-			function(x,y){co.drawImage(nextHover,x,y,160,80)},),
+			function(x,y){drawImageIfLoaded(nextBtn,x,y,160,80)},
+			function(x,y){drawImageIfLoaded(nextHover,x,y,160,80)},),
 		createMenuButton(650,250,320,80,function(){window.location.href="./canvas.html?lvl="+selected_level},
-			function(x,y){co.drawImage(playLevel,x,y,320,80)},
-			function(x,y){co.drawImage(playLevelHover,x,y,320,80)},),
+			function(x,y){drawImageIfLoaded(playLevel,x,y,320,80)},
+			function(x,y){drawImageIfLoaded(playLevelHover,x,y,320,80)},),
 	]
 	menu.changeButtonList(title_screen_button_list)
 	onmousemove=function(e){menu.onMouseMoveSomewhere(e.pageX*c.width/window.innerWidth,e.pageY*c.height/window.innerHeight)}
