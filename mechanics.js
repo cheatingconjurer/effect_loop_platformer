@@ -63,6 +63,7 @@ window.onload = function() {
     let walking = false;
     let walkFrame = 0;
     const walkFrameDelay = 10;
+	let platformToggle=false; //true is red, false is blue
 
     // Platforms array (add more platforms easily)
     const platforms = [
@@ -70,6 +71,17 @@ window.onload = function() {
         { x: 200, y: canvas.height - 150, width: 150, height: 20 },
         { x: 400, y: canvas.height - 200, width: 200, height: 20 }
     ];
+	const red_platforms=[
+        { x: 800, y: canvas.height - 100, width: 200, height: 20 }
+    ]
+	const blue_platforms=[
+        { x: 1000, y: canvas.height - 100, width: 200, height: 20 }
+    ]
+	
+	// Switches (switch between red and blue platforms)
+	const platform_switches = [
+		{ x: 980, y: canvas.height - 140, width: 40, height: 40}
+	]
 
     // Load spike images
     const spikeImgSmall = new Image();
@@ -144,6 +156,12 @@ window.onload = function() {
                 soundJump.play();
             }
             wWasPressed = false;
+			
+			for(let platform_switch of platform_switches){
+				if(checkCollision(player,platform_switch)){
+					platformToggle=!platformToggle;
+				}
+			}
         }
     });
 
@@ -155,7 +173,29 @@ window.onload = function() {
             a.y + a.height > b.y
         );
     }
-
+	
+	function platform_collision_checks(platform_list){
+		for (const platform of platform_list) {
+            if (checkCollision(player, platform)) {
+                if (!flipSquare.flipped) {
+                    if (player.velY >= 0 && player.y + player.height - player.velY <= platform.y) {
+                        player.y = platform.y - player.height;
+                        player.velY = 0;
+                        player.grounded = true;
+                        jumping = false;
+                    }
+                } else {
+                    if (player.velY <= 0 && player.y - player.velY >= platform.y + platform.height) {
+                        player.y = platform.y + platform.height;
+                        player.velY = 0;
+                        player.grounded = true;
+                        jumping = false;
+                    }
+                }
+            }
+        }
+	}
+	
     function update() {
         // Left/Right movement
         if ((keys['a'] || keys['d']) && player.grounded) {
@@ -200,26 +240,13 @@ window.onload = function() {
 
         // Platform collision
         player.grounded = false;
-        for (const platform of platforms) {
-            if (checkCollision(player, platform)) {
-                if (!flipSquare.flipped) {
-                    if (player.velY >= 0 && player.y + player.height - player.velY <= platform.y) {
-                        player.y = platform.y - player.height;
-                        player.velY = 0;
-                        player.grounded = true;
-                        jumping = false;
-                    }
-                } else {
-                    if (player.velY <= 0 && player.y - player.velY >= platform.y + platform.height) {
-                        player.y = platform.y + platform.height;
-                        player.velY = 0;
-                        player.grounded = true;
-                        jumping = false;
-                    }
-                }
-            }
-        }
-
+        platform_collision_checks(platforms);
+		if(platformToggle==true){
+			platform_collision_checks(red_platforms);
+		}else{
+			platform_collision_checks(blue_platforms);
+		}
+		
         // Wall collision
         if (player.x < 0) player.x = 0;
         if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
@@ -269,6 +296,19 @@ window.onload = function() {
         for (const platform of platforms) {
             ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
         }
+		ctx.fillStyle = platformToggle?'#ff0000ff':'#ff888810'
+		for (const platform of red_platforms) {
+            ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+		}
+		ctx.fillStyle = platformToggle?'#8888ff10':'#0000ffff'
+		for (const platform of blue_platforms) {
+            ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+        }		
+		
+		ctx.fillStyle="#ff00ff"
+		for (let platform_switch of platform_switches){
+			ctx.fillRect(platform_switch.x,platform_switch.y,platform_switch.width,platform_switch.height);
+		}
 
         // Draw spikes (images)
         for (const spike of spikes) {
